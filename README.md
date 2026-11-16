@@ -12,6 +12,7 @@ The problem it targets: Hong Kong produces over 3,000 tonnes of food waste a yea
 |---|---|
 | **Scan** | Receipt, grocery haul or expiry-label photos. The AI returns structured items (EN and 繁中 names, quantity, storage, expiry, price). You review them before saving. |
 | **Pantry** | Everything you have, sorted by what expires first. Filter by fridge, freezer or pantry. Mark items as used, partly used or tossed; move items to the freezer. |
+| **Freshness check** | For items with no expiry label: take 3–5 photos from different angles and get a condition (fresh, use soon, throw out or not sure), a days-left range, the visible signs, and a confidence level. Hard safety rules apply: visible mould or slime always means throw out, and meat, seafood, dairy, eggs and tofu never show as fresh. Saving the estimate sets the expiry and keeps a history. |
 | **Cook** | Three recipes built around soon-to-expire food, assuming a typical HK kitchen. |
 | **Ask EcoChef** | A chat assistant that can see your current inventory. |
 | **Reminders** | A local notification at 9am the day before food expires. |
@@ -47,7 +48,8 @@ To enable the AI features, copy `mobile/.env.example` to `mobile/.env` and add y
 
 ## Roadmap
 
-- [ ] Test the scan, recipe and chat features against live responses
+- [ ] Test the scan, recipe, chat and freshness-check features against live responses
+- [ ] Feedback on freshness estimates (was it right?) to measure accuracy
 - [ ] Test camera and notifications on a real phone
 - [ ] Check the Chinese UI text with native speakers
 - [ ] Deploy the AI routes and build with EAS
