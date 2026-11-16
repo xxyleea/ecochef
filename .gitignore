@@ -1,0 +1,9 @@
+# Figma source is 150 MB+ (over GitHub's 100 MB file limit) — keep it out of git; the design lives in Figma.
+*.fig
+
+# Local Claude Code settings
+.claude/settings.local.json
+
+# OS
+.DS_Store
+Thumbs.db
