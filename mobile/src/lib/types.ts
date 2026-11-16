@@ -32,6 +32,14 @@ export interface Item {
   storageTip?: string;
   status: ItemStatus;
   closedAt?: string;
+  checks?: FreshnessCheck[];
+}
+
+export interface FreshnessCheck {
+  at: string; // ISO
+  condition: 'fresh' | 'use_soon' | 'discard' | 'unsure';
+  daysLeftMin: number;
+  daysLeftMax: number;
 }
 
 /** An item proposed by a scan, before the user confirms it. */

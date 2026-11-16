@@ -128,6 +128,14 @@ export default function ItemDetail() {
           </ScrollView>
         </Card>
 
+        {item.status === 'active' && (
+          <Button
+            label={t.freshTitle}
+            kind="secondary"
+            onPress={() => router.push({ pathname: '/check/[id]', params: { id: item.id } })}
+          />
+        )}
+
         <Button
           label={t.delete}
           kind="ghost"

@@ -231,3 +231,74 @@ export async function chat(args: {
   if (!text) throw new AIError(502, 'No reply. Try again.');
   return text;
 }
+
+// ---------- Freshness check (multi-photo condition estimate) ----------
+
+const FreshnessSchema = z.object({
+  itemName: z.string().describe('Plain English generic name of the food shown'),
+  itemNameZh: z.string().describe('Traditional Chinese name'),
+  condition: z.enum(['fresh', 'use_soon', 'discard', 'unsure']),
+  daysLeftMin: z.number().describe('Earliest days still good to eat, 0 = use today'),
+  daysLeftMax: z.number().describe('Latest days still good to eat, 0 = use today'),
+  confidence: z.enum(['low', 'medium', 'high']),
+  visibleSigns: z.array(z.string()).describe('Specific things you can see that affect freshness, e.g. "browning on the cut end", "soft spot on one side", or [] if none'),
+  highRisk: z.boolean().describe('True for meat, seafood, dairy, eggs, tofu, cooked food, or anything where spoilage bacteria are a risk without visible change'),
+  safetyNote: z.string().describe('One short note the user should read, or empty string'),
+  advice: z.string().describe('One practical sentence: what to do now (eat today, cook soon, freeze, or bin)'),
+});
+export type FreshnessResult = z.infer<typeof FreshnessSchema>;
+
+const FRESHNESS_SYSTEM = `You judge how fresh one food item is from several photos of it, for EcoChef, a Hong Kong food-waste app. Users decide whether to eat food based on your answer, so be conservative and honest.
+
+Rules:
+- Use every photo. The photos show different angles; check the underside, cut ends, stems, bottoms of packs and any dark or hidden parts.
+- Only report what is visible. Name specific signs (colour, texture, shape, mould, slime, sprouting, swelling, leaks, drying out, wilting). Do not guess at smell or taste.
+- Visible mould, slime, sprouting, swelling, leaks or off colour that looks like rot mean condition "discard" and 0 days.
+- Photos cannot show bacterial spoilage. For meat, seafood, dairy, eggs, tofu and cooked food set highRisk true, never say "fresh", and write a safetyNote telling the user to smell and check texture before eating.
+- Days: give a realistic range for Hong Kong's warm, humid climate, based on the item, how it is stored, and what the photos show. Wet-market produce and meat spoil faster than packaged supermarket goods. If the item is not yet visibly ripe or old, do not invent spoilage.
+- If the photos are blurry, or the item cannot be identified, set condition "unsure", confidence "low", and ask for a clearer photo in advice.
+- Keep every string short and plain. No markdown.`;
+
+export async function checkFreshness(args: {
+  category: string;
+  storage: string;
+  nameHint?: string;
+  daysSinceAdded?: number;
+  today: string;
+  photos: { base64: string; mediaType: 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif' }[];
+}): Promise<FreshnessResult> {
+  const context = [
+    `Today is ${args.today}.`,
+    `Category (from the app): ${args.category}.`,
+    `Stored in: ${args.storage}.`,
+    args.nameHint ? `The user calls it: ${args.nameHint}.` : '',
+    args.daysSinceAdded !== undefined ? `It was added ${args.daysSinceAdded} day(s) ago.` : '',
+    `Photos: ${args.photos.length}, from different angles.`,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const response = await getClient().beta.messages.parse({
+    model: MODEL,
+    max_tokens: 4000,
+    betas: BETAS,
+    fallbacks: 'default',
+    output_config: { effort: 'medium', format: betaZodOutputFormat(FreshnessSchema) },
+    system: FRESHNESS_SYSTEM,
+    messages: [
+      {
+        role: 'user',
+        content: [
+          ...args.photos.map((p) => ({
+            type: 'image' as const,
+            source: { type: 'base64' as const, media_type: p.mediaType, data: p.base64 },
+          })),
+          { type: 'text', text: context },
+        ],
+      },
+    ],
+  });
+  assertNotRefused(response.stop_reason);
+  if (!response.parsed_output) throw new AIError(502, 'Could not judge that item. Try clearer photos.');
+  return response.parsed_output;
+}

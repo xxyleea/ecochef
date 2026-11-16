@@ -96,3 +96,31 @@ export async function askChef(messages: ChatMessage[], items: Item[]): Promise<s
   });
   return data.reply;
 }
+
+export interface FreshnessVerdictResponse {
+  condition: 'fresh' | 'use_soon' | 'discard' | 'unsure';
+  daysLeftMin: number;
+  daysLeftMax: number;
+  confidence: 'low' | 'medium' | 'high';
+  visibleSigns: string[];
+  highRisk: boolean;
+  safetyNote: string;
+  advice: string;
+  itemName: string;
+  itemNameZh: string;
+}
+
+export async function checkFreshness(
+  item: Item,
+  photos: { base64: string; mediaType: string }[],
+): Promise<FreshnessVerdictResponse> {
+  const mt = (m: string) => (['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(m) ? m : 'image/jpeg');
+  return post<FreshnessVerdictResponse>('/api/freshness', {
+    category: item.category,
+    storage: item.storage,
+    nameHint: item.name,
+    daysSinceAdded: Math.floor((Date.now() - new Date(item.addedAt).getTime()) / 86_400_000),
+    today: todayISO(),
+    photos: photos.map((p) => ({ base64: p.base64, mediaType: mt(p.mediaType) })),
+  });
+}

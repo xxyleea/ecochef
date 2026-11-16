@@ -44,6 +44,7 @@ export default function RootLayout() {
         <Stack.Screen name="review" options={{ presentation: 'modal', title: '' }} />
         <Stack.Screen name="item/[id]" options={{ presentation: 'modal', title: '' }} />
         <Stack.Screen name="add" options={{ presentation: 'modal', title: '' }} />
+        <Stack.Screen name="check/[id]" options={{ presentation: 'modal', title: '' }} />
         <Stack.Screen name="chat" options={{ title: '' }} />
         <Stack.Screen name="settings" options={{ title: '' }} />
       </Stack>
