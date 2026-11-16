@@ -19,6 +19,17 @@ The problem it targets: Hong Kong produces over 3,000 tonnes of food waste a yea
 | **Impact** | Use rate, items used vs. tossed, the HK$ value of food used, and an estimated CO₂e saving. |
 | **Languages** | English and Traditional Chinese, set from your device and changeable in Settings. |
 
+## Screenshots
+
+Captured from the web build at phone size, with sample data (not real household records).
+
+<p align="center">
+  <img src="docs/screenshots/home.png" width="180" alt="Home screen with items to use soon" />
+  <img src="docs/screenshots/pantry.png" width="180" alt="Pantry sorted by expiry" />
+  <img src="docs/screenshots/freshness-check.png" width="180" alt="Freshness check screen" />
+  <img src="docs/screenshots/impact.png" width="180" alt="Impact screen with use rate and CO2e saving" />
+</p>
+
 ## Tech
 
 - **App:** Expo (SDK 58), React Native, Expo Router, TypeScript, Zustand, AsyncStorage
